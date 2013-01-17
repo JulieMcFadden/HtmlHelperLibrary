@@ -19,8 +19,7 @@
 }
 @using (Html.BeginForm())
 {   
-    @Html.Chart("sampleChart", Model.Data, "Year", 
-        "Hits in Thousands");   
+    @Html.Chart("sampleChart", Model.Data, "Year", "Hits in Thousands", "400", "600", "blue");   
 }
 
 @section Scripts

@@ -10,55 +10,45 @@ namespace DotNetCurry.HtmlHelpers
 {
     public static class ChartExtensions
     {
-        public static HtmlString Chart(this HtmlHelper helper,
-            string chartName,
-            List<int[]> dataSource,
-            string xTitle,
-            string yTitle)
+        public static HtmlString Chart(this HtmlHelper helper, string chartName, List<string[]> dataSource, string xTitle, string yTitle, string chartHeight, string chartWidth,
+            string chartColor)
         {
-            return SetupHtml(chartName, GetDataSourceFromIntArray(dataSource),
-                xTitle, yTitle);
+            return SetupHtml(chartName, GetDataSourceFromIntArray(dataSource), xTitle, yTitle, chartHeight, chartWidth, chartColor);
         }
 
-        private static string GetDataSourceFromIntArray(List<int[]> dataSource)
+        private static string GetDataSourceFromIntArray(List<string[]> dataSource)
         {
             Json.Encode(dataSource);
             return "arrDataSource = " + Json.Encode(dataSource);
         }
 
-        private static HtmlString SetupHtml(string chartName, string dataSource,
-            string xTitle, string yTitle)
+        private static HtmlString SetupHtml(string chartName, string dataSource, string xTitle, string yTitle, string chartHeight, string chartWidth, string chartColor)
         {
             TagBuilder container = new TagBuilder("div");
             container.Attributes.Add("style", "border: solid 1px #F0F0F0;");
-
             TagBuilder canvas = new TagBuilder("canvas");
             canvas.Attributes.Add("id", chartName);
-            canvas.Attributes.Add("height", "400");
-            canvas.Attributes.Add("width", "600");
+            canvas.Attributes.Add("height", chartHeight);
+            canvas.Attributes.Add("width", chartWidth);
             canvas.SetInnerText(@"Your browser does not support HTML5 Canvas");
 
-            TagBuilder script = SetupScript(chartName, dataSource, xTitle, yTitle);
+            TagBuilder script = SetupScript(chartName, dataSource, xTitle, yTitle, chartColor);
 
             TagBuilder noScript = new TagBuilder("noscript");
-            noScript.InnerHtml = @"
-                This chart is unavailable because JavaScript is disabled on your computer. 
-                Please enable JavaScript and refresh this page to see the chart in action.";
-            container.InnerHtml = canvas.ToString() +
-                    script.ToString() +
-                    noScript.ToString();
+            noScript.InnerHtml = @"This chart is unavailable because Javascript is disabled on your computer.  Please enable JavaScript and refresh this page to see the chart in action.";
+            container.InnerHtml = canvas.ToString() + script.ToString() + noScript.ToString();
             return new HtmlString(container.ToString());
         }
 
-        private static TagBuilder SetupScript(string chartName, string dataSource,
-            string xTitle, string yTitle)
+        private static TagBuilder SetupScript(string chartName, string dataSource, string xTitle, string yTitle, string chartColor)
         {
             TagBuilder script = new TagBuilder("script");
             script.Attributes.Add("type", "text/javascript");
 
             script.InnerHtml = @"
     <!--
-        // chart sample data
+        // chart data
+        var chartColor = '" + chartColor + @"';
         var arrDataSource = new Array();
         " + dataSource + @"
         var canvas;
@@ -102,7 +92,7 @@ namespace DotNetCurry.HtmlHelpers
             cMarginHeight = cMargin + cHeight;
             // bar properties
             bMargin = 15;
-            totalBars = arrDataSource.length;
+            totalBars = parseInt(arrDataSource.length);
             bWidth = (cWidth / totalBars) - bMargin;
 
 
@@ -115,7 +105,7 @@ namespace DotNetCurry.HtmlHelpers
             }
 
             totLabelsOnYAxis = 10;
-            context.font = '10pt Garamond';
+            context.font = '10pt Verdana';
 
             // initialize Animation variables
             ctr = 0;
@@ -161,12 +151,10 @@ namespace DotNetCurry.HtmlHelpers
             // X Axis
             context.textAlign = 'center';
             for (var i = 0; i < totalBars; i++) {
-                //arrval = arrDataSource[i].split(',');
-                //name = arrval[0];
                 name = arrDataSource[i][0];
 
                 markerXPos = cMarginSpace + bMargin + (i * (bWidth + bMargin)) + (bWidth / 2);
-                markerYPos = cMarginHeight + 10;
+                markerYPos = cMarginHeight + 20;
                 context.fillText(name, markerXPos, markerYPos, bWidth);
             }
 
@@ -175,19 +163,17 @@ namespace DotNetCurry.HtmlHelpers
             // Add Y Axis title
             context.translate(cMargin + 10, cHeight / 2);
             context.rotate(Math.PI * -90 / 180);
-            context.fillText('Visitors in Thousands', 0, 0);
+            context.fillText('" + yTitle + @"', 0, 0);
 
             context.restore();
 
             // Add X Axis Title
-            context.fillText('Year Wise', cMarginSpace + (cWidth / 2), cMarginHeight + 30);
+            context.fillText('" + xTitle + @"', cMarginSpace + (cWidth / 2), cMarginHeight + 50);
         }
 
         function drawChartWithAnimation() {
             // Loop through the total bars and draw
             for (var i = 0; i < totalBars; i++) {
-                //var arrVal = arrDataSource[i].split(',');
-                //bVal = parseInt(arrVal[1]);
                 bVal = parseInt(arrDataSource[i][1]);
                 bHt = (bVal * cHeight / maxDataValue) / numctr * ctr;
                 bX = cMarginSpace + (i * (bWidth + bMargin)) + bMargin;
@@ -211,8 +197,26 @@ namespace DotNetCurry.HtmlHelpers
 
             if (fill) {
                 var gradient = context.createLinearGradient(0, 0, 0, 300);
-                gradient.addColorStop(0, 'green');
-                gradient.addColorStop(1, 'rgba(67,203,36,.15)');
+                if (chartColor == 'blue' || chartColor == '')
+                {
+                    gradient.addColorStop(0, 'blue');
+                    gradient.addColorStop(1, 'rgba(67,103,306,.15)');
+                }
+                 else if (chartColor == 'red')
+                {
+                    gradient.addColorStop(0, 'red');
+                    gradient.addColorStop(1, 'rgba(306,103,67,.15)');
+                }
+                 else if (chartColor == 'green')
+                {
+                    gradient.addColorStop(0, 'green');
+                    gradient.addColorStop(1, 'rgba(67,306,103,.15)');
+                }
+                else
+                {
+                    gradient.addColorStop(0, 'blue');
+                    gradient.addColorStop(1, 'rgba(67,103,306,.15)');
+                }
                 context.fillStyle = gradient;
                 context.strokeStyle = gradient;
                 context.fill();

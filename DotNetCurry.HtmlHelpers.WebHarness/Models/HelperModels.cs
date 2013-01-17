@@ -8,9 +8,9 @@ namespace DotNetCurry.HtmlHelpers.WebHarness.Models
     public class TwoDimensionalData
     {
         public int Id { get; set; }
-        private List<int[]> _data;
+        private List<string[]> _data;
 
-        public List<int[]> Data
+        public List<string[]> Data
         {
             get { return _data; }
             set { _data = value; }
@@ -18,7 +18,7 @@ namespace DotNetCurry.HtmlHelpers.WebHarness.Models
 
         public TwoDimensionalData()
         {
-            _data = new List<int[]>();
+            _data = new List<string[]>();
 
         }
 
